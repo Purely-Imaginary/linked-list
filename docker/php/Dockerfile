@@ -1,4 +1,4 @@
-FROM php:8.3-cli-alpine
+FROM php:8.5-cli-alpine
 
 RUN apk add --no-cache git unzip bash linux-headers $PHPIZE_DEPS \
     && pecl install pcov \

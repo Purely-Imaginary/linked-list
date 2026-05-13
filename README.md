@@ -1,6 +1,6 @@
 # SortedLinkedList
 
-A PHP 8.3 library providing a generic `SortedLinkedList<T of int|string>` — a singly-linked list that keeps values in caller-defined sort order. Designed to ShipMonk's engineering standards: PHPStan level 10 + Psalm, 100% per-method coverage, 95%+ mutation score, Rector on CI.
+A PHP 8.3+ library providing a generic `SortedLinkedList<T of int|string>` — a singly-linked list that keeps values in caller-defined sort order. Designed to ShipMonk's engineering standards: PHPStan level 10 + Psalm, 100% per-method coverage, 95%+ mutation score, Rector on CI.
 
 [![CI](https://github.com/amadeusz-opac/sorted-linked-list/actions/workflows/ci.yml/badge.svg)](https://github.com/amadeusz-opac/sorted-linked-list/actions)
 
