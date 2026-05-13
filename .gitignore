@@ -4,5 +4,4 @@ coverage/
 infection.log
 infection-summary.log
 phpstan-first-run.log
-composer.lock
 .captainhook/
