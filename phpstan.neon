@@ -1,0 +1,19 @@
+parameters:
+    level: 10
+    paths:
+        - src
+        - tests
+    parallel:
+        maximumNumberOfProcesses: 1
+    reportUnmatchedIgnoredErrors: true
+    ignoreErrors:
+        # Test fixture uses mutable public arrays for recording — intentional
+        -
+            identifier: shipmonk.publicPropertyNotReadonly
+            paths:
+                - tests/
+
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - vendor/shipmonk/phpstan-rules/rules.neon
+    - vendor/shipmonk/dead-code-detector/rules.neon

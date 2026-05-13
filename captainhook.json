@@ -1,0 +1,28 @@
+{
+    "commit-msg": {
+        "enabled": false,
+        "actions": []
+    },
+    "pre-commit": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "vendor/bin/phpcs",
+                "label": "Code style (shipmonk/coding-standard)"
+            },
+            {
+                "action": "php -d memory_limit=512M vendor/bin/phpstan analyse",
+                "label": "PHPStan level 10"
+            }
+        ]
+    },
+    "pre-push": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "vendor/bin/phpunit --no-coverage",
+                "label": "PHPUnit (no coverage)"
+            }
+        ]
+    }
+}

@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  ci:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: ["8.3", "8.4"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pcov
+          coverage: pcov
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHPStan
+        run: php -d memory_limit=512M vendor/bin/phpstan analyse
+
+      - name: Psalm
+        run: vendor/bin/psalm --no-progress
+
+      - name: Rector (check no changes needed)
+        run: vendor/bin/rector process --dry-run
+
+      - name: Architecture (phparkitect)
+        run: vendor/bin/phparkitect check --config phparkitect.php
+
+      - name: Code Style
+        run: vendor/bin/phpcs
+
+      - name: Tests + Coverage
+        run: >
+          vendor/bin/phpunit
+          --coverage-clover=coverage/clover.xml
+          --coverage-xml=coverage/xml
+          --log-junit=coverage/junit.xml
+
+      - name: Coverage Guard
+        run: vendor/bin/coverage-guard check coverage/clover.xml --config coverage-guard.php
+
+      - name: Mutation Tests
+        run: vendor/bin/infection --threads=4 --coverage=coverage
+
+      - name: Dependency Analysis
+        run: vendor/bin/composer-dependency-analyser --config composer-dependency-analyser.php

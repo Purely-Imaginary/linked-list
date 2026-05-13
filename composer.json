@@ -1,0 +1,59 @@
+{
+    "name": "amadeusz-opac/sorted-linked-list",
+    "description": "A generic sorted linked list that holds either int or string values",
+    "keywords": ["sorted", "linked-list", "data-structure", "generics", "typed-collection"],
+    "homepage": "https://github.com/amadeusz-opac/sorted-linked-list",
+    "authors": [
+        {
+            "name": "Amadeusz Opac",
+            "email": "theammanify@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "type": "library",
+    "license": "MIT",
+    "suggest": {
+        "symfony/http-kernel": "^7.0 — required to use SortedLinkedListBundle",
+        "symfony/dependency-injection": "^7.0 — required to use SortedLinkedListBundle",
+        "symfony/config": "^7.0 — required to use SortedLinkedListBundle"
+    },
+    "require": {
+        "php": "^8.3",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "captainhook/captainhook": "^5.29",
+        "infection/infection": "^0.29",
+        "phparkitect/phparkitect": "^1.0",
+        "phpbench/phpbench": "^1.6",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.0",
+        "rector/rector": "^2.4",
+        "shipmonk/coding-standard": "^0.2",
+        "shipmonk/composer-dependency-analyser": "^1.7",
+        "shipmonk/coverage-guard": "^1.0",
+        "shipmonk/dead-code-detector": "^1.1",
+        "shipmonk/phpstan-rules": "^4.3",
+        "symfony/config": "^7.0",
+        "symfony/dependency-injection": "^7.0",
+        "symfony/http-kernel": "^7.0",
+        "vimeo/psalm": "^6.16"
+    },
+    "autoload": {
+        "psr-4": {
+            "ShipMonk\\SortedLinkedList\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ShipMonk\\SortedLinkedList\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

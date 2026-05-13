@@ -1,0 +1,16 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"],
+        "excludes": ["Bridge"]
+    },
+    "logs": {
+        "text": "infection.log",
+        "summary": "infection-summary.log"
+    },
+    "minMsi": 97,
+    "minCoveredMsi": 97,
+    "mutators": {
+        "@default": true
+    }
+}

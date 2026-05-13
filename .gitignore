@@ -1,0 +1,8 @@
+vendor/
+coverage/
+.phpunit.cache/
+infection.log
+infection-summary.log
+phpstan-first-run.log
+composer.lock
+.captainhook/

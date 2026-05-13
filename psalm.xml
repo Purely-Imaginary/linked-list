@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="5"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="true"
+>
+    <projectFiles>
+        <directory name="src" />
+        <directory name="tests" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <!--
+            Psalm cannot narrow class properties after null-checks the same way PHPStan does.
+            These PossiblyNullReference warnings are false positives guarded by while/if conditions.
+        -->
+        <PossiblyNullReference errorLevel="suppress" />
+
+        <!--
+            The @var ItemRemovedEvent<T> annotation is required by PHPStan level 10 for template
+            type propagation, but Psalm infers the type without it.
+        -->
+        <UnnecessaryVarAnnotation>
+            <errorLevel type="suppress">
+                <file name="src/SortedLinkedList.php" />
+            </errorLevel>
+        </UnnecessaryVarAnnotation>
+
+        <!--
+            Comparator::__construct is a private guard against instantiation — intentionally unreachable.
+        -->
+        <UnusedConstructor>
+            <errorLevel type="suppress">
+                <file name="src/Comparator.php" />
+            </errorLevel>
+        </UnusedConstructor>
+
+        <!--
+            The factory returns SortedLinkedList<int|string> internally; @phpstan-ignore covers
+            the return annotation. Psalm agrees the return type annotation is technically incorrect
+            (callable-generics contravariance limitation shared by both tools).
+            The SortedLinkedList.php variant: ArrayIterator<int, T> vs int<0, max> — both correct.
+        -->
+        <InvalidReturnType>
+            <errorLevel type="suppress">
+                <file name="src/Bridge/Symfony/SortedLinkedListFactory.php" />
+            </errorLevel>
+            <errorLevel type="info">
+                <file name="src/SortedLinkedList.php" />
+            </errorLevel>
+        </InvalidReturnType>
+        <InvalidReturnStatement>
+            <errorLevel type="suppress">
+                <file name="src/Bridge/Symfony/SortedLinkedListFactory.php" />
+            </errorLevel>
+            <errorLevel type="info">
+                <file name="src/SortedLinkedList.php" />
+            </errorLevel>
+        </InvalidReturnStatement>
+        <InvalidArgument>
+            <errorLevel type="suppress">
+                <file name="src/Bridge/Symfony/SortedLinkedListFactory.php" />
+            </errorLevel>
+            <!--
+                Tests intentionally pass wrong types to verify the runtime type-lock guard.
+                These are documented with // @phpstan-ignore argument.type in the test file.
+            -->
+            <errorLevel type="suppress">
+                <directory name="tests" />
+            </errorLevel>
+        </InvalidArgument>
+
+        <!--
+            PHPUnit discovers and runs test classes without them being imported elsewhere.
+            Psalm sees them as unused classes — they are not.
+        -->
+        <UnusedClass>
+            <errorLevel type="suppress">
+                <directory name="tests" />
+            </errorLevel>
+        </UnusedClass>
+
+        <!-- Parameter name of abstract method implementation — cosmetic, not a bug. -->
+        <MoreSpecificImplementedParamType errorLevel="info" />
+        <ParamNameMismatch errorLevel="info" />
+    </issueHandlers>
+</psalm>
