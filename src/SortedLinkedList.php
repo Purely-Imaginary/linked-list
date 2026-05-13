@@ -20,6 +20,7 @@ use ShipMonk\SortedLinkedList\Exception\EmptyListException;
 use ShipMonk\SortedLinkedList\Exception\MixedTypeException;
 use Stringable;
 use function array_map;
+use function array_reduce;
 use function assert;
 use function get_debug_type;
 use function implode;
@@ -149,15 +150,15 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
         }
 
         // Deep-copy the node chain so mutations on either list do not affect the other.
-        $newHead = new Node($this->head->getValue());
+        $newHead = new Node($this->head->value);
         $newCurrent = $newHead;
-        $oldCurrent = $this->head->getNext();
+        $oldCurrent = $this->head->next;
 
         while ($oldCurrent instanceof Node) {
-            $newNode = new Node($oldCurrent->getValue());
-            $newCurrent->setNext($newNode);
+            $newNode = new Node($oldCurrent->value);
+            $newCurrent->next = $newNode;
             $newCurrent = $newNode;
-            $oldCurrent = $oldCurrent->getNext();
+            $oldCurrent = $oldCurrent->next;
         }
 
         $this->head = $newHead;
@@ -175,25 +176,25 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
 
         $newNode = new Node($value);
 
-        if (!$this->head instanceof Node || ($this->comparator)($value, $this->head->getValue()) <= 0) {
-            $newNode->setNext($this->head);
+        if (!$this->head instanceof Node || ($this->comparator)($value, $this->head->value) <= 0) {
+            $newNode->next = $this->head;
             $this->head = $newNode;
         } else {
             $current = $this->head;
 
             while (
-                $current->getNext() instanceof Node
-                && ($this->comparator)($value, $current->getNext()->getValue()) > 0
+                $current->next instanceof Node
+                && ($this->comparator)($value, $current->next->value) > 0
             ) {
-                $current = $current->getNext();
+                $current = $current->next;
             }
 
-            $newNode->setNext($current->getNext());
-            $current->setNext($newNode);
+            $newNode->next = $current->next;
+            $current->next = $newNode;
         }
 
         // If the new node has no successor it is the new last node.
-        if (!$newNode->getNext() instanceof Node) {
+        if (!$newNode->next instanceof Node) {
             $this->tail = $newNode;
         }
 
@@ -221,8 +222,8 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
             return false;
         }
 
-        if ($this->head->getValue() === $value) {
-            $this->head = $this->head->getNext();
+        if ($this->head->value === $value) {
+            $this->head = $this->head->next;
             // If the list is now empty, tail must also be cleared.
             if (!$this->head instanceof Node) {
                 $this->tail = null;
@@ -243,8 +244,8 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
 
         $current = $this->head;
 
-        while ($current->getNext() instanceof Node) {
-            $cmp = ($this->comparator)($current->getNext()->getValue(), $value);
+        while ($current->next instanceof Node) {
+            $cmp = ($this->comparator)($current->next->value, $value);
 
             if ($cmp === 0) {
                 break;
@@ -256,21 +257,21 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
                 return false;
             }
 
-            $current = $current->getNext();
+            $current = $current->next;
         }
 
-        if (!$current->getNext() instanceof Node) {
+        if (!$current->next instanceof Node) {
             $this->logger->debug('Item not found in SortedLinkedList', ['value' => $value, 'removed' => false, 'size' => $this->size]);
 
             return false;
         }
 
         // If the node being removed is the tail, current becomes the new tail.
-        if (!$current->getNext()->getNext() instanceof Node) {
+        if (!$current->next->next instanceof Node) {
             $this->tail = $current;
         }
 
-        $current->setNext($current->getNext()->getNext());
+        $current->next = $current->next->next;
         assert($this->size > 0);
         $this->size--;
         $this->logger->debug('Item removed from SortedLinkedList', ['value' => $value, 'removed' => true, 'size' => $this->size]);
@@ -309,15 +310,15 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
         $current = $this->head;
 
         while ($current instanceof Node) {
-            if ($current->getValue() === $value) {
+            if ($current->value === $value) {
                 return true;
             }
 
-            if (($this->comparator)($current->getValue(), $value) > 0) {
+            if (($this->comparator)($current->value, $value) > 0) {
                 return false;
             }
 
-            $current = $current->getNext();
+            $current = $current->next;
         }
 
         return false;
@@ -334,7 +335,7 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
             throw new EmptyListException('Cannot get first element of an empty list.');
         }
 
-        return $this->head->getValue();
+        return $this->head->value;
     }
 
     /**
@@ -348,7 +349,7 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
             throw new EmptyListException('Cannot get last element of an empty list.');
         }
 
-        return $this->tail->getValue();
+        return $this->tail->value;
     }
 
     #[Override]
@@ -387,8 +388,8 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
         $current = $this->head;
 
         while ($current instanceof Node) {
-            $result[] = $current->getValue();
-            $current = $current->getNext();
+            $result[] = $current->value;
+            $current = $current->next;
         }
 
         return $result;
@@ -420,7 +421,9 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
     public function __toString(): string
     {
         $type = $this->lockedType ?? 'empty';
-        $values = implode(', ', array_map(static fn (int|string $v): string => (string) $v, $this->toArray()));
+        $values = $this->toArray()
+            |> (static fn (array $a): array => array_map(static fn (int|string $v): string => (string) $v, $a)) // phpcs:ignore PSR12.Operators.OperatorSpacing, Squiz.WhiteSpace.OperatorSpacing
+            |> (static fn (array $a): string => implode(', ', $a)); // phpcs:ignore PSR12.Operators.OperatorSpacing, Squiz.WhiteSpace.OperatorSpacing
 
         return sprintf('SortedLinkedList<%s>[%s]', $type, $values);
     }
@@ -444,8 +447,8 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
         $count = 0;
 
         while ($current instanceof Node && $count < $n) {
-            $new->add($current->getValue());
-            $current = $current->getNext();
+            $new->add($current->value);
+            $current = $current->next;
             $count++;
         }
 
@@ -479,10 +482,10 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
 
         while ($current instanceof Node && $pos < $offset + $length) {
             if ($pos >= $offset) {
-                $new->add($current->getValue());
+                $new->add($current->value);
             }
 
-            $current = $current->getNext();
+            $current = $current->next;
             $pos++;
         }
 
@@ -602,13 +605,8 @@ final class SortedLinkedList implements Countable, IteratorAggregate, JsonSerial
         mixed $initial,
     ): mixed
     {
-        $carry = $initial;
-
-        foreach ($this->toArray() as $value) {
-            $carry = $callback($carry, $value);
-        }
-
-        return $carry;
+        return $this->toArray()
+            |> (static fn (array $arr): mixed => array_reduce($arr, $callback, $initial)); // phpcs:ignore PSR12.Operators.OperatorSpacing, Squiz.WhiteSpace.OperatorSpacing
     }
 
     /**

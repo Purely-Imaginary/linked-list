@@ -1,5 +1,6 @@
 parameters:
     level: 10
+    phpVersion: 80500
     paths:
         - src
         - tests
@@ -12,6 +13,11 @@ parameters:
             identifier: shipmonk.publicPropertyNotReadonly
             paths:
                 - tests/
+        # Node::$next is public for SortedLinkedList access but @internal protects from outside
+        -
+            identifier: shipmonk.publicPropertyNotReadonly
+            paths:
+                - src/Node.php
 
 includes:
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon

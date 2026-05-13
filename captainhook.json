@@ -7,11 +7,11 @@
         "enabled": true,
         "actions": [
             {
-                "action": "vendor/bin/phpcs",
+                "action": "docker compose run --rm php vendor/bin/phpcs",
                 "label": "Code style (shipmonk/coding-standard)"
             },
             {
-                "action": "php -d memory_limit=512M vendor/bin/phpstan analyse",
+                "action": "docker compose run --rm php php -d memory_limit=512M vendor/bin/phpstan analyse",
                 "label": "PHPStan level 10"
             }
         ]
@@ -20,7 +20,7 @@
         "enabled": true,
         "actions": [
             {
-                "action": "vendor/bin/phpunit --no-coverage",
+                "action": "docker compose run --rm php vendor/bin/phpunit --no-coverage",
                 "label": "PHPUnit (no coverage)"
             }
         ]

@@ -2,14 +2,14 @@
 
 ## What this is
 
-A standalone PHP 8.3 Composer library providing `SortedLinkedList<T of int|string>` — a singly-linked list that keeps values in caller-defined sorted order. The library has no framework runtime dependency; an optional Symfony 7 bridge adds DI integration.
+A standalone PHP 8.5 Composer library providing `SortedLinkedList<T of int|string>` — a singly-linked list that keeps values in caller-defined sorted order. The library has no framework runtime dependency; an optional Symfony 7 bridge adds DI integration.
 
 ## Directory Structure
 
 ```
 src/
 ├── SortedLinkedList.php          — core class (~530 lines)
-├── Node.php                      — @internal linked-list node
+├── Node.php                      — @internal linked-list node (PHP 8.4 public readonly + public ?self $next)
 ├── Comparator.php                — static factory for common comparators
 ├── Exception/
 │   ├── SortedLinkedListException.php  — base exception (catch-all)

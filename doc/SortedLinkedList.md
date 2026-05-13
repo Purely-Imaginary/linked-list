@@ -79,6 +79,15 @@ PHP's `==` and `===` operators compare objects by identity or by value (includin
 
 `reduce` is the fundamental fold operation on a sequence. It composes cleanly with the existing `filter()` and `merge()` to form a complete functional API: filter the list to a subset, then reduce it to a scalar. The `@template TResult` PHPStan annotation allows callers to keep full type inference (`$sum = $list->reduce(fn(int $c, int $v) => $c + $v, 0)` correctly infers `$sum: int`).
 
+The implementation uses PHP 8.5's pipe operator to express the transformation as a data pipeline:
+
+```php
+return $this->toArray()
+    |> (fn (array $arr): mixed => array_reduce($arr, $callback, $initial));
+```
+
+This makes the data-flow direction explicit: the list's values are piped into `array_reduce`. The alternative (nested function calls reading inside-out) is technically equivalent but harder to scan.
+
 ## Why `limit()` and `slice()`?
 
 These are the most common subsequence operations on ordered sequences. `limit(n)` is used everywhere a "top N" view is needed (leaderboards, priority queues, pagination). `slice()` is the generalisation. Both are non-mutating (return new lists) for the same reason `filter()` and `merge()` are: a sorted list is a value-like object, and callers should not be surprised by mutations when they only asked for a view.
@@ -130,6 +139,32 @@ The PHPBench suite verifies this empirically: `benchLast10/100/1000` all show ~0
 - Consistent with how PHP itself renders collections
 
 The format includes the locked type, making it clear at a glance whether you are looking at an int or string list.
+
+## Why the pipe operator `|>` in `__toString()` and `reduce()`?
+
+PHP 8.5 introduced the pipe operator `|>`, which passes the left-hand side as the first argument to a parenthesized callable on the right. It turns nested, inside-out function calls into a readable top-to-bottom pipeline.
+
+`__toString()` previously read:
+```php
+$values = implode(', ', array_map(static fn (int|string $v): string => (string) $v, $this->toArray()));
+```
+
+To understand this, you have to read from the innermost call outward: `toArray()` → `array_map()` → `implode()`. With pipe:
+```php
+$values = $this->toArray()
+    |> (fn (array $a): array => array_map(static fn (int|string $v): string => (string) $v, $a))
+    |> (fn (array $a): string => implode(', ', $a));
+```
+
+The data flows left-to-right, top-to-bottom — in the same order you read it.
+
+Note: PHP 8.5 requires arrow functions on the right side of `|>` to be parenthesized.
+
+## Why use `^8.5` as the minimum PHP version?
+
+The pipe operator is a PHP 8.5 feature; it cannot be lowered to a syntax-compatible polyfill. The Node simplification (PHP 8.4's `public readonly` on promoted constructor properties, removing all getters/setters) is also a 8.4+ feature. Requiring `^8.5` is the honest minimum that reflects actual syntax used.
+
+For libraries targeting wider compatibility, a `^8.3` build that avoids 8.5 syntax would be equally valid — but would forfeit the expressiveness gains.
 
 ## Why `unique()` uses the comparator for equality?
 

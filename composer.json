@@ -18,7 +18,7 @@
         "symfony/config": "^7.0 — required to use SortedLinkedListBundle"
     },
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "psr/log": "^3.0"
     },
     "require-dev": {

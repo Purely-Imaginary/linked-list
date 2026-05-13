@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-05-13
+## [1.0.0] - 2026-05-14
 
 ### Added
 
@@ -50,6 +50,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Optional `LoggerInterface` injection; uses `NullLogger` when absent (zero overhead)
 - `DEBUG` on every mutation; `WARNING` before throwing `MixedTypeException`
+
+#### PHP 8.5 Features
+
+- **Pipe operator `|>`** — used in `reduce()` and `__toString()` to express transformation pipelines top-to-bottom instead of inside-out
+- **`Node` simplified** — PHP 8.4's `public readonly` constructor promotion eliminates all getters/setters; `@internal` protects the public mutable `$next` from external misuse
+- Minimum PHP version: `^8.5`
 
 #### Toolchain
 
