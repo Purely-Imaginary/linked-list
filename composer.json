@@ -1,8 +1,8 @@
 {
-    "name": "amadeusz-opac/sorted-linked-list",
+    "name": "purely-imaginary/linked-list",
     "description": "A generic sorted linked list that holds either int or string values",
     "keywords": ["sorted", "linked-list", "data-structure", "generics", "typed-collection"],
-    "homepage": "https://github.com/amadeusz-opac/sorted-linked-list",
+    "homepage": "https://github.com/Purely-Imaginary/linked-list",
     "authors": [
         {
             "name": "Amadeusz Opac",
